@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use server';
 
 import { ID, Query } from "node-appwrite";
 import { createAdminClient, createSessionClient } from "../appwrite";
 import { cookies } from "next/headers";
 import { encryptId, extractCustomerIdFromUrl, parseStringify } from "../utils";
-// import { CountryCode, ProcessorTokenCreateRequest, ProcessorTokenCreateRequestProcessorEnum, Products } from "plaid";
+import { CountryCode, ProcessorTokenCreateRequest, ProcessorTokenCreateRequestProcessorEnum, Products } from "plaid";
 
 // import { plaidClient } from '@/lib/plaid';
 import { revalidatePath } from "next/cache";
@@ -35,18 +36,18 @@ export const getUserInfo = async ({ userId }: getUserInfoProps) => {
 export const signIn = async ({ email, password }: signInProps) => {
   try {
     const { account } = await createAdminClient();
-    const response = await account.createEmailPasswordSession(email, password);
+    const session = await account.createEmailPasswordSession(email, password);
 
-    // (await cookies()).set("appwrite-session", session.secret, {
-    //   path: "/",
-    //   httpOnly: true,
-    //   sameSite: "strict",
-    //   secure: true,
-    // });
+    (await cookies()).set("appwrite-session", session.secret, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "strict",
+      secure: true,
+    });
 
-    // const user = await getUserInfo({ userId: session.userId }) 
+    const user = await getUserInfo({ userId: session.userId }) 
 
-    return parseStringify(response);
+    return parseStringify(user);
   } catch (error) {
     console.error('Error', error);
   }
@@ -69,14 +70,14 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
 
     if(!newUserAccount) throw new Error('Error creating user')
 
-    // const dwollaCustomerUrl = await createDwollaCustomer({
-    //   ...userData,
-    //   type: 'personal'
-    // })
+    const dwollaCustomerUrl = await createDwollaCustomer({
+      ...userData,
+      type: 'personal'
+    })
 
-    // if(!dwollaCustomerUrl) throw new Error('Error creating Dwolla customer')
+    if(!dwollaCustomerUrl) throw new Error('Error creating Dwolla customer')
 
-    // const dwollaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl);
+    const dwollaCustomerId = extractCustomerIdFromUrl(dwollaCustomerUrl);
 
     const newUser = await database.createDocument(
       DATABASE_ID!,
@@ -85,19 +86,19 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
       {
         ...userData,
         userId: newUserAccount.$id,
-        // dwollaCustomerId,
-        // dwollaCustomerUrl
+        dwollaCustomerId,
+        dwollaCustomerUrl
       }
     )
 
     const session = await account.createEmailPasswordSession(email, password);
 
-    (await cookies()).set("appwrite-session", session.secret, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "strict",
-      secure: true,
-    });
+    // (await cookies()).set("appwrite-session", session.secret, {
+    //   path: "/",
+    //   httpOnly: true,
+    //   sameSite: "strict",
+    //   secure: true,
+    // });
 
     return parseStringify(newUser);
   } catch (error) {
@@ -114,8 +115,7 @@ export async function getLoggedInUser() {
 
     return parseStringify(user);
   } catch (error) {
-    console.log(error)
-    return null;
+    console.log("Session error:", error);    return null;
   }
 }
 
@@ -126,7 +126,6 @@ export const logoutAccount = async () => {
     (await cookies()).delete('appwrite-session');
 
     await account.deleteSession('current');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return null;
   }

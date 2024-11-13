@@ -80,8 +80,15 @@ export function formatAmount(amount: number): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
-
+export const parseStringify = (value: any) => {
+  try {
+    return JSON.parse(JSON.stringify(value ?? {}));
+  } catch (error) {
+    console.error("Error parsing value:", error);
+    return {};
+  }
+};
+// export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
 export const removeSpecialCharacters = (value: string) => {
   return value.replace(/[^\w\s]/gi, "");
 };
