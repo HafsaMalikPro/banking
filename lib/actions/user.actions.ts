@@ -7,9 +7,9 @@ import { cookies } from "next/headers";
 import { encryptId, extractCustomerIdFromUrl, parseStringify } from "../utils";
 import { CountryCode, ProcessorTokenCreateRequest, ProcessorTokenCreateRequestProcessorEnum, Products } from "plaid";
 
-// import { plaidClient } from '@/lib/plaid';
+import { plaidClient } from '@/lib/plaid';
 import { revalidatePath } from "next/cache";
-// import { addFundingSource, createDwollaCustomer } from "./dwolla.actions";
+import { addFundingSource, createDwollaCustomer } from "./dwolla.actions";
 
 const {
   APPWRITE_DATABASE_ID: DATABASE_ID,
@@ -70,7 +70,7 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
 
     if(!newUserAccount) throw new Error('Error creating user')
 
-    const dwollaCustomerUrl = await createDwollaCustomer({
+    const dwollaCustomerUrl = await createDwollaCustomer({ 
       ...userData,
       type: 'personal'
     })
@@ -93,12 +93,12 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
 
     const session = await account.createEmailPasswordSession(email, password);
 
-    // (await cookies()).set("appwrite-session", session.secret, {
-    //   path: "/",
-    //   httpOnly: true,
-    //   sameSite: "strict",
-    //   secure: true,
-    // });
+    (await cookies()).set("appwrite-session", session.secret, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "strict",
+      secure: true,
+    });
 
     return parseStringify(newUser);
   } catch (error) {

@@ -16,7 +16,8 @@ const Footer = ({ user, type = 'desktop' }: FooterProps) => {
     <footer className="footer">
       <div className={type === 'mobile' ? 'footer_name-mobile' : 'footer_name'}>
         <p className="text-xl font-bold text-gray-700">
-          {user?.firstName[0]}
+          {/* {user?.firstName[0]} */}
+          {user?.firstName}
         </p>
       </div>
 
@@ -30,7 +31,7 @@ const Footer = ({ user, type = 'desktop' }: FooterProps) => {
       </div>
 
       <div className="footer_image" onClick={handleLogOut}>
-        <Image src="icons/logout.svg" fill alt="jsm" />
+        <Image src="icons/logout.svg" fill alt="jsm" /> 
       </div>
     </footer>
   )
